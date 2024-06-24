@@ -2,130 +2,94 @@ import * as React from 'react';
 import {
     View,
     useWindowDimensions,
-    Button,
     TextInput,
     Alert,
-    Platform,
-    Text,
-    FlatList,
-    TouchableOpacity, StyleSheet, ActivityIndicator
+    Text, ActivityIndicator, TouchableOpacity, ScrollView
 } from 'react-native';
-import {TabView, SceneMap} from 'react-native-tab-view';
+import {TabBar, TabView} from 'react-native-tab-view';
 import {Audio} from "expo-av";
 import * as FileSystem from "expo-file-system";
-import * as Permissions from "expo-permissions";
 import {useEffect, useState} from "react";
-import {useNavigation, useRoute} from "@react-navigation/native";
+import {useRoute} from "@react-navigation/native";
 import * as DocumentPicker from "expo-document-picker";
 import {Picker} from "@react-native-picker/picker";
-
+import ListAudio from "../components/ListAudio";
+import {selectAudioStyle} from "../style/selectAudioStyle";
+import {selectModelStyle} from "../style/selectModelStyle";
+//La fonction changeTab transmis en paramètre à chaque fois sert a transmettre l'audio entre les tabs (la 1 et la 2 notamment)
 
 //Fonction et code pour la slide 1, liste des audio enregistrer précédament
 const AudioList = ({changeTab}) => {
 
-const [audioFiles, setAudioFiles] = useState([]);
-const [playingAudio, setPlayingAudio] = useState(null);
-const [sound, setSound] = useState(null);
-const navigation = useNavigation();
+    const [audioFiles, setAudioFiles] = useState([]);
 
-useEffect(() => {
-    loadAudioFiles();
-}, []);
+    //Ici le useEffect qui permet de charger les audio enregistré dans le téléphone
+    useEffect(() => {
+        loadAudioFiles();
+    }, []);
 
-const loadAudioFiles = async () => {
-    const files = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
-    const audioFiles = files.filter(file => file.endsWith('.m4a'));
-    setAudioFiles(audioFiles);
-};
+    //Ici la fonction qui permet de charger les audios
+    const loadAudioFiles = async () => {
+        //Ici on vient chercher les fichier audio
+        const files = await FileSystem.readDirectoryAsync(FileSystem.documentDirectory);
 
-const playAudio = async (fileName) => {
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-    const {sound} = await Audio.Sound.createAsync({uri: fileUri});
-    setSound(sound);
-    await sound.playAsync();
-};
+        //Ici on filtre les fichiers pour ne prendre que les fichiers .m4a
+        const audioFiles = files.filter(file => file.endsWith('.m4a'));
+        setAudioFiles(audioFiles);
+    };
 
-const stopAudio = async () => {
-    if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-        setSound(null);
-    }
-};
+    //Ici la fonction qui permet de charger un audio depuis le téléphone
+    const selectAudioFromPhone = async () => {
+        const result = await DocumentPicker.getDocumentAsync({type: 'audio/*'});
+        if (result.type === 'success') {
+            playAudioFromUri(result.uri);
+        }
+    };
 
-const deleteAudio = async (fileName) => {
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-    await FileSystem.deleteAsync(fileUri);
-    loadAudioFiles();
-    Alert.alert('Audio Deleted', 'The recording has been deleted.');
-};
+    //Ici la fonction qui lance le fichier audio chargé depuis le téléphone
+    const playAudioFromUri = async (uri) => {
+        const {sound} = await Audio.Sound.createAsync({uri});
+        setSound(sound);
+        await sound.playAsync();
+    };
 
-const selectAudioFromPhone = async () => {
-    const result = await DocumentPicker.getDocumentAsync({type: 'audio/*'});
-    if (result.type === 'success') {
-        playAudioFromUri(result.uri);
-    }
-};
+    // const styles = StyleSheet.create({
+    //     container: {
+    //         flex: 1,
+    //         margin: 20
+    //     },
+    //     title: {
+    //         fontSize: 24,
+    //         fontWeight: 'bold',
+    //         marginBottom: 30,
+    //     },
+    //
+    //     phoneButton: {
+    //         alignItems: "center",
+    //         borderRadius: 25,
+    //         borderWidth: 1,
+    //         padding: 10,
+    //         marginTop: "100%"
+    //     },
+    // });
 
-const playAudioFromUri = async (uri) => {
-    const {sound} = await Audio.Sound.createAsync({uri});
-    setSound(sound);
-    await sound.playAsync();
-};
+    return (
+        <View style={selectAudioStyle.container}>
+            <Text style={selectAudioStyle.title}>Veuillez choisir un audio</Text>
 
-const selectedAudio = (file) => {
-changeTab(1, file)
-};
+            {/*Ici le composant fait pour charger la liste des audios*/}
+            <ListAudio audioList={audioFiles} changeTab={changeTab}/>
 
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            padding: 16,
-        },
-        title: {
-            fontSize: 24,
-            fontWeight: 'bold',
-            marginBottom: 16,
-        },
-        audioItem: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 8,
-        },
-        audioText: {
-            fontSize: 16,
-        },
-    });
-
-
-return (
-    <View style={styles.container}>
-        <Text style={styles.title}>Sélection de l'audio</Text>
-        <FlatList
-            data={audioFiles}
-            keyExtractor={(item) => item}
-            renderItem={({item}) => (
-                <View style={styles.audioItem}>
-                    <TouchableOpacity onPress={() => selectedAudio(item)}>
-                        <Text style={styles.audioText}>{item}</Text>
-                    </TouchableOpacity>
-                    <Button title="Play" onPress={() => playAudio(item)}/>
-                    <Button title="Delete" onPress={() => deleteAudio(item)}/>
-                </View>
-            )}
-        />
-        <Button title="Sélectionner audio du téléphone" onPress={selectAudioFromPhone}/>
-    </View>
-)
-
-
+            <TouchableOpacity style={selectAudioStyle.phoneButton} onPress={selectAudioFromPhone}>
+                <Text>Charger un audio du téléphone</Text>
+            </TouchableOpacity>
+        </View>
+    )
 
 }
 
-//Fonction et code pour la slide 2, choix du model de tranformation de l'audio
-
-const ModelChoice = ({audioFile, changeTab}) => {
+//Fonction et code pour la slide 2, choix du model de transformation de l'audio
+const ModelChoice = ({audioFile}) => {
     const route = useRoute();
     const {ipAdress, port} = route.params;
     const [model, setModel] = useState("");
@@ -137,262 +101,244 @@ const ModelChoice = ({audioFile, changeTab}) => {
 
     const servAdress = "http://" + ipAdress + ":" + port;
 
+    //Ici la fonction pour envoyé un fichier au serveur
     const sendFile = async (fileUri) => {
-    try{
-        const formData = new FormData();
-        formData.append("file", {
-            uri: fileUri,
-            name: audioFile,
-            type: "audio/wav", // Vous pouvez ajuster ce type selon le type de fichier que vous envoyez
-        });
-
-        console.log(fileUri + "FILE URI")
-        const resp = await fetch(`${servAdress}/upload`, {
-            method: "POST",
-            body: formData,
-            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-            headers: { "Content-Type": "multipart/form-data" ,filename: fileUri}
-        });
-        console.log(resp.body);
-    } catch (error) {
-        console.error("Failed to upload file: ", error);
-    }
-
-        // try {
-        //     console.log(fileUri + "FILE URI")
-        //     const resp = fetch(`${servAdress}/upload`, fileUri, {
-        //         fieldName: 'file',
-        //         httpMethod: 'POST',
-        //         uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-        //         headers: { filename: fileUri }
-        //     });
-        //     console.log(resp.body);
-        // } catch (error) {
-        //     console.error("Failed to upload file: ", error);
-        // }
-    };
-
-
-    const downLoadFile = async () => {
-        // let directory = FileSystem.documentDirectory + "my_directory"
-        // await FileSystem.makeDirectoryAsync(directory);
-        //
-        // const {uri} = await FileSystem.downloadAsync(servAdress + "/download", directory + "/hey.wav")
+        //On encapsule l'ensemble dans un try catch
         try {
-            let directory = FileSystem.documentDirectory + "my_directory/";
-            await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            //Ici on set le formData avec lequel on envoi le fichier
+            const formData = new FormData();
+            //On y ajoute les paramètres nécéssaire
+            formData.append("file", {
+                uri: fileUri,
+                name: audioFile,
+                type: "audio/wav",
+            });
 
-            const { uri } = await FileSystem.downloadAsync(`${servAdress}/download`, directory + "hey.wav");
-            return uri;
+            //Ici on lance la requête au serveur avec la bonne route et en transmettant le form data
+            const resp = await fetch(`${servAdress}/upload`, {
+                method: "POST",
+                body: formData,
+                uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+                headers: {"Content-Type": "multipart/form-data", filename: fileUri}
+            });
         } catch (error) {
-            console.error("Failed to download file: ", error);
+
+            //Ici on log les erreurs s'il y en a
+            console.error("L'envoi a échoué", error);
         }
     };
 
 
+    //Ici la fonction pour téléchargé le fichier audio renvoyé par le serveur
+    const downLoadFile = async () => {
+        //On encapsule l'ensemble dans un try catch
+        try {
+            //Ici on set le dossier dans lequel on va enregistrer le fichier
+            let directory = FileSystem.documentDirectory + "my_directory/";
+            await FileSystem.makeDirectoryAsync(directory, {intermediates: true});
+
+            //Ici on fait la requete au serveur pour téléchargé le fichier
+            const {uri} = await FileSystem.downloadAsync(`${servAdress}/download`, directory + ".wav");
+            return uri;
+
+        } catch (error) {
+            //Ici on log les erreurs s'il y en a
+            console.error("Le téléchargement du fichier a échoué.", error);
+        }
+    };
+
+
+    //Ici la fonction qui permet d'aller chercher les models, encapsulé dans un useEffect pour les chargés au chargement du screen
     useEffect(() => {
         const getModels = async () => {
+            //On encapsule l'ensemble dans un try catch
             try {
+                //Ici on fait la requete au serveur pour chargé la liste de model
                 const response = await fetch(`${servAdress}/getmodels`);
+
+                //On tranforme le résultat en json, on s'assure ensuite que c'est bien un tableau de modeles
                 const result = await response.json();
                 if (result && result.models && Array.isArray(result.models)) {
-                    setModels(result.models); // Met à jour l'état avec le tableau de modèles
+                    setModels(result.models);
                 } else {
+                    //Ici on log le résultat si jamais le format de réponse n'est pas correct
                     console.error("Les données reçues ne sont pas dans le format attendu:", result);
                 }
             } catch (err) {
+                //Ici on log les erreurs s'il y en a
                 console.error("Erreur lors de la récupération des modèles:", err);
             }
         };
-
-        getModels();
-    }, []); // Appeler une seule fois après le montage initial
+    }, []);
 
 
+    //Ici la fonction pour séléctionner le modèle que le serveur utilisera
     const setChoosenModel = async (itemValue) => {
+        //On encapsule l'ensemble dans un try catch
         try {
+            //Ici la requête envers le serveur avec le model choisis en paramètre
             await fetch(`${servAdress}/selectModel/${itemValue}`)
-            Alert.alert('Model greatly changed!', 'Model set.'); // Display success message
-        } catch (err){
-            Alert.alert('Error', 'Please try again.');
+        } catch (err) {
+            Alert.alert('Erreur durant le changement.');
+            //Ici on log les erreurs s'il y en a
             console.log(err);
         }
     };
 
+    //Ici la fonction qui permet de jouer l'audio choisis
     const playAudio = async (uri) => {
-        const { sound } = await Audio.Sound.createAsync({ uri });
+        const {sound} = await Audio.Sound.createAsync({uri});
         setSound(sound);
         await sound.playAsync();
     };
 
+    //Ici la fonction qui permet lancer la requête de tranformation de l'audio
     const transformAudio = async () => {
+        //Si aucun audio n'est séléctionné, alors on le signal
         if (!audioFile) {
             Alert.alert('Erreur', 'Aucun fichier audio sélectionné.');
             return;
         }
 
+        //Ici l'indicateur de chargement que l'on affiche
         setLoadIndicator(true)
+
         const fileUri = `${FileSystem.documentDirectory}${audioFile}`;
-        console.log(audioFile + " audio zeub " + FileSystem.documentDirectory)
+
+        //Ici on envoie le fichier
         await sendFile(fileUri);
+        //On télécharge ensuite le résulat
         const transformedUri = await downLoadFile(fileUri);
+
         setTransformedAudio(transformedUri);
+
+        //Une fois la réponse obtenue on retire l'indicateur de chargement
         setLoadIndicator(false)
     };
 
+    //Ici la fonction pour sauvegardé l'audio nouvellement convertis.
     const saveConvertedAudio = async () => {
+        //S'il y a un nom de fichier et un audio transformé, on le sauvegarde
         if (transformedAudio && saveFileName) {
+            //Ici on set le dossier pour sauvegarder le fichier audio
             const directory = FileSystem.documentDirectory + "saved_converted_audio/";
-            await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            await FileSystem.makeDirectoryAsync(directory, {intermediates: true});
             const fileName = saveFileName + transformedAudio.split('/').pop();
             const newFileUri = `${directory}${fileName}`;
 
+            //Ici on bouge le fichier dans le nouveau dossier
             await FileSystem.copyAsync({
                 from: transformedAudio,
                 to: newFileUri,
             });
 
-            Alert.alert('Audio Saved', 'The converted audio has been saved.');
+            Alert.alert('Audio sauvegardé.');
         } else {
             Alert.alert('Erreur', "Aucun fichier audio converti disponible ou vous n'avez pas entrez de nom pour le fichier.");
         }
     };
 
+    //Ici la fonction qui change, le model
     const valueChange = async (itemValue) => {
         setModel(itemValue);
         setChoosenModel(itemValue);
     }
 
-    // useEffect(() => {
-    //     getModels();
-    // }, []);
+    return (
+        <ScrollView style={selectModelStyle.container}>
 
+            <Text style={selectModelStyle.title}>Model</Text>
 
-return(
-    <View style={{ flex: 1, backgroundColor: '#673ab7', padding: 16 }}>
-        <Picker
-            selectedValue={model}
-            mode={"dialog"}
-            onValueChange={(itemValue, itemIndex) => valueChange(itemValue)}
-        >
-            <Picker.Item label="Cats" value="cats.onnx" />
-            <Picker.Item label="Darbouka" value="darbouka.onnx" />
-            <Picker.Item label="Dogs" value="dogs.onnx" />
-            <Picker.Item label="Jazz" value="jazz.onnx" />
-            <Picker.Item label="Speech" value="speech.onnx" />
-        </Picker>
+            <Picker
+                style={selectModelStyle.picker}
+                selectedValue={model}
+                mode={"dialog"}
+                onValueChange={(itemValue, itemIndex) => valueChange(itemValue)}
+            >
+                {/*J'ai fais le choix de mettre les modeles en dure, car j'ai eu beaucoup de soucis avec le set des modèles*/}
+                <Picker.Item label="Cats" value="cats.onnx"/>
+                <Picker.Item label="Darbouka" value="darbouka.onnx"/>
+                <Picker.Item label="Dogs" value="dogs.onnx"/>
+                <Picker.Item label="Jazz" value="jazz.onnx"/>
+                <Picker.Item label="Speech" value="speech.onnx"/>
 
-        {/*<Picker*/}
-        {/*    selectedValue={models.length > 0 ? models[0] : null} // Par défaut, sélectionne le premier modèle, ajustez selon vos besoins*/}
-        {/*    mode={"dialog"}*/}
-        {/*    onValueChange={(itemValue) => valueChange(itemValue)}*/}
-        {/*>*/}
-        {/*    /!* Mapper les modèles dans les Picker.Item *!/*/}
-        {/*    {models.map((model, index) => (*/}
-        {/*        <Picker.Item key={index} label={model} value={model} />*/}
-        {/*    ))}*/}
-        {/*</Picker>*/}
+            </Picker>
 
-        <Button title="Transférer l'audio" onPress={transformAudio} />
-        {loadIndicator === true && (
-            <ActivityIndicator size="large" />
-        )}
-        {audioFile && (
-            <View>
-                <Text>audio d'entrée: {audioFile}</Text>
-                <Button title="Play" onPress={() => playAudio(`${FileSystem.documentDirectory}${audioFile}`)} />
-            </View>
-        )}
-        {transformedAudio && (
-            <View>
-                <Text>audio converti</Text>
-                <Button title="Play" onPress={() => playAudio(transformedAudio)} />
-                <TextInput
-                    placeholder="Enter file name"
-                    value={saveFileName}
-                    onChangeText={setSaveFileName}
-                />
-                <Button title="Enregistrer l'audio converti" onPress={saveConvertedAudio} />
-            </View>
-        )}
-    </View>
+            <Text style={selectModelStyle.title}>Audio d'origine</Text>
+
+            {loadIndicator === true && (
+                <View style={selectModelStyle.loadingContainer}>
+                    <ActivityIndicator size="large"/>
+                </View>
+            )}
+
+            {audioFile && (
+                <View>
+                    <Text style={selectModelStyle.text}>Audio d'entrée : {audioFile}</Text>
+                    <TouchableOpacity style={selectModelStyle.button}
+                                      onPress={() => playAudio(`${FileSystem.documentDirectory}${audioFile}`)}>
+                        <Text style={selectModelStyle.buttonText}>Play</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            <TouchableOpacity style={selectModelStyle.button} onPress={transformAudio}>
+                <Text style={selectModelStyle.buttonText}>Transférer l'audio</Text>
+            </TouchableOpacity>
+
+            {transformedAudio && (
+                <View>
+                    <Text style={selectModelStyle.title}>Audio converti</Text>
+
+                    <TouchableOpacity style={selectModelStyle.button} onPress={() => playAudio(transformedAudio)}>
+                        <Text style={selectModelStyle.buttonText}>Play</Text>
+                    </TouchableOpacity>
+
+                    <TextInput
+                        style={selectModelStyle.inputText}
+                        placeholder="Nom du fichier"
+                        value={saveFileName}
+                        onChangeText={setSaveFileName}
+                    />
+
+                    <TouchableOpacity style={selectModelStyle.button} onPress={saveConvertedAudio}>
+                        <Text style={selectModelStyle.buttonText}>Enregistrer l'audio converti</Text>
+                    </TouchableOpacity>
+
+                </View>
+            )}
+        </ScrollView>
     )
 }
 
-const ConvertedAudio = () => {
+const ConvertedAudio = ({changeTab}) => {
     const [audioFiles, setAudioFiles] = useState([]);
     const [sound, setSound] = useState(null);
 
+    //La fonction pour charger les fichier audio
     const loadAudioFiles = async () => {
         const directory = FileSystem.documentDirectory + "saved_converted_audio/";
         const files = await FileSystem.readDirectoryAsync(directory);
         setAudioFiles(files);
     };
 
-    const playAudio = async (fileName) => {
-        const fileUri = `${FileSystem.documentDirectory}saved_converted_audio/${fileName}`;
-        const { sound } = await Audio.Sound.createAsync({ uri: fileUri });
-        setSound(sound);
-        await sound.playAsync();
-    };
-
-    const deleteAudio = async (fileName) => {
-        const fileUri = `${FileSystem.documentDirectory}saved_converted_audio/${fileName}`;
-        await FileSystem.deleteAsync(fileUri);
-        loadAudioFiles();
-        Alert.alert('Audio Deleted', 'The recording has been deleted.');
-    };
-
+    //Le useEffect pour charger les audio au chargement du screen
     useEffect(() => {
         loadAudioFiles();
     }, []);
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#34de04', padding: 16 }}>
-            <Button title="Refresh" onPress={() => loadAudioFiles()} />
-            <FlatList
-                data={audioFiles}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                        <Text style={{ flex: 1 }}>{item}</Text>
-                        <Button title="Play" onPress={() => playAudio(item)} />
-                        <Button title="Delete" onPress={() => deleteAudio(item)} />
-                    </View>
-                )}
-            />
+        <View style={{flex: 1, padding: 16}}>
+            <ListAudio audioList={audioFiles} changeTab={changeTab}/>
         </View>
     );
 }
-
-const styles = {
-    container: { flex: 1, padding: 16 },
-    title: { fontSize: 24, fontWeight: 'bold' },
-    audioItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 8 },
-    audioText: { fontSize: 18 },
-};
-
-// const renderScene = SceneMap({
-//     first: AudioList,
-//     second: ModelChoice,
-//     third: ConvertedAudio,
-// })
-
-const renderScene = ({ route, jumpTo }) => {
-    switch (route.key) {
-        case 'first':
-            return <AudioList changeTab={jumpTo} />;
-        case 'second':
-            return <ModelChoice changeTab={jumpTo} />;
-        case 'third':
-            return <ConvertedAudio />;
-    }
-};
 
 export default function ManageTabScreen() {
     const layout = useWindowDimensions();
     const [index, setIndex] = React.useState(0);
 
+    //Ici les routes pour l'ensemble de la tabView
     const [routes] = React.useState([
         {key: 'first', title: 'First'},
         {key: 'second', title: 'Second'},
@@ -400,29 +346,32 @@ export default function ManageTabScreen() {
     ]);
 
     const [selectedAudio, setSelectedAudio] = useState(null);
+
+    //La fonction changeTab qui permet la transmmission du fichier audio entre les tabs, ainsi que la navigation
     const changeTab = (newIndex, audioFile = null) => {
         setSelectedAudio(audioFile);
         setIndex(newIndex);
     };
+
+
     return (
-        // <TabView onIndexChange={setIndex} navigationState={{index, routes}} renderScene={renderScene}
-        //          initialLayout={{width: layout.width}}/>
+        //Ici la tabview qui gère l'ensemble des slides
         <TabView
-            navigationState={{ index, routes }}
-            renderScene={({ route }) => {
+            navigationState={{index, routes}}
+            renderScene={({route}) => {
                 switch (route.key) {
                     case 'first':
-                        return <AudioList changeTab={changeTab} />;
+                        return <AudioList changeTab={changeTab}/>;
                     case 'second':
-                        return <ModelChoice audioFile={selectedAudio} changeTab={changeTab} />;
+                        return <ModelChoice audioFile={selectedAudio} changeTab={changeTab}/>;
                     case 'third':
-                        return <ConvertedAudio />;
+                        return <ConvertedAudio/>;
                     default:
                         return null;
                 }
             }}
             onIndexChange={setIndex}
-            initialLayout={{ width: layout.width }}
+            initialLayout={{width: layout.width}}
         />
 
     )

@@ -19,7 +19,7 @@ export default function App() {
           <Stack.Screen name={"Record"} component={recordScreen}>
           </Stack.Screen>
 
-          <Stack.Screen name={"ManageAudio"} component={manageTabScreen}>
+          <Stack.Screen name={"Manage Audio"} component={manageTabScreen}>
           </Stack.Screen>
 
 
