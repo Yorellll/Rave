@@ -42,7 +42,8 @@ const AudioList = ({changeTab}) => {
     const selectAudioFromPhone = async () => {
         const result = await DocumentPicker.getDocumentAsync({type: 'audio/*'});
         if (result.type === 'success') {
-            playAudioFromUri(result.uri);
+            //Après la séléction du fichier dans le téléphone on se dirige vers la slide 2
+            changeTab(1, result.uri)
         }
     };
 
@@ -53,25 +54,6 @@ const AudioList = ({changeTab}) => {
         await sound.playAsync();
     };
 
-    // const styles = StyleSheet.create({
-    //     container: {
-    //         flex: 1,
-    //         margin: 20
-    //     },
-    //     title: {
-    //         fontSize: 24,
-    //         fontWeight: 'bold',
-    //         marginBottom: 30,
-    //     },
-    //
-    //     phoneButton: {
-    //         alignItems: "center",
-    //         borderRadius: 25,
-    //         borderWidth: 1,
-    //         padding: 10,
-    //         marginTop: "100%"
-    //     },
-    // });
 
     return (
         <View style={selectAudioStyle.container}>
@@ -340,9 +322,9 @@ export default function ManageTabScreen() {
 
     //Ici les routes pour l'ensemble de la tabView
     const [routes] = React.useState([
-        {key: 'first', title: 'First'},
-        {key: 'second', title: 'Second'},
-        {key: 'third', title: 'Third'},
+        {key: 'first', title: 'Liste'},
+        {key: 'second', title: 'Transfère'},
+        {key: 'third', title: 'Resultat'},
     ]);
 
     const [selectedAudio, setSelectedAudio] = useState(null);

@@ -16,6 +16,5 @@ export const selectAudioStyle = StyleSheet.create({
         borderRadius: 25,
         borderWidth: 1,
         padding: 10,
-        marginTop: "100%"
     },
 });

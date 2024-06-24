@@ -1,4 +1,5 @@
 # Application Rave
+![Logo Rave](./assets/RaveLogo.png)
 
 ## Description:
 
@@ -18,5 +19,6 @@ Le serveur propose un ensemble de model de conversion, que ce soit une conversio
 
 - [React Native](https://reactnative.dev/)
 - Serveur python (mis a disposition et réalisé par D.Genova)
+
 
 Les tests ont été réalisé sur un appareil Android (Samsung Galaxy S7).
