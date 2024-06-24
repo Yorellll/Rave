@@ -4,7 +4,7 @@ import {
     useWindowDimensions,
     TextInput,
     Alert,
-    Text, ActivityIndicator, TouchableOpacity, ScrollView
+    Text, ActivityIndicator, TouchableOpacity, ScrollView, StyleSheet
 } from 'react-native';
 import {TabBar, TabView} from 'react-native-tab-view';
 import {Audio} from "expo-av";
@@ -353,11 +353,32 @@ export default function ManageTabScreen() {
         setIndex(newIndex);
     };
 
+    const renderTabBar = props => (
+        <TabBar
+            {...props}
+            indicatorStyle={{ backgroundColor: 'white' }}
+            style={styles.tabBar}
+            labelStyle={styles.label}
+        />
+    );
+
+    //Ici le style de la tabBar
+    const styles = StyleSheet.create({
+        tabBar: {
+            backgroundColor: 'black',
+        },
+        label: {
+            color: 'white',
+        },
+    });
 
     return (
         //Ici la tabview qui gère l'ensemble des slides
         <TabView
+            //Ici on indique la route et l'index de la tab
             navigationState={{index, routes}}
+
+            //Ici le fonction qui rend les vues de chaques slide en fonction de la route
             renderScene={({route}) => {
                 switch (route.key) {
                     case 'first':
@@ -370,10 +391,16 @@ export default function ManageTabScreen() {
                         return null;
                 }
             }}
+            //Ici on change l'index quand l'utilisateur change de tab
             onIndexChange={setIndex}
+            //Ici on définit la taille de la tabBar
             initialLayout={{width: layout.width}}
+            //Ici on appelle la tabBar du dessus afin de lui attribuer le style voulu
+            renderTabBar={renderTabBar}
         />
 
-    )
+    );
+
+
 
 }
