@@ -78,9 +78,10 @@ export default function ListAudio(props) {
 
     return (
         <View style={style.container}>
-            {!tabChange && <TouchableOpacity style={style.refresh}>
-                <Text style={style.text}>Refresh</Text>
-            </TouchableOpacity>}
+            {!tabChange &&
+                <TouchableOpacity onPress={loadAudioFiles} style={style.refresh}>
+                    <Text style={style.text}>Refresh</Text>
+                </TouchableOpacity>}
 
             <FlatList
                 data={audioFiles}

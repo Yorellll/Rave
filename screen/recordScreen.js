@@ -2,9 +2,9 @@ import React, {useState, useEffect} from 'react';
 import {View, Button, TextInput, StyleSheet, Alert, Platform, TouchableOpacity, Text} from 'react-native';
 import {Audio} from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import * as Permissions from 'expo-permissions';
 import {useRoute} from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import * as MediaLibrary from "expo-media-library";
 
 //Ici le screen qui permet de le record d'audio
 export default function RecordScreen({navigation}) {
@@ -144,7 +144,7 @@ export default function RecordScreen({navigation}) {
     //Ici la fonction qui demande la permission sur les téléphones android
     const getPermissions = async () => {
         if (Platform.OS === 'android') {
-            const {status} = await Permissions.askAsync(Permissions.MEDIA_LIBRARY);
+            const {status} = await  MediaLibrary.getPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('Permission de stockage requise.' );
             }
