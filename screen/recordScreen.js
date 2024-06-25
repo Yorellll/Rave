@@ -146,7 +146,8 @@ export default function RecordScreen({navigation}) {
         if (Platform.OS === 'android') {
             const {status} = await  MediaLibrary.getPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert('Permission de stockage requise.' );
+                const permission = await Audio.requestPermissionsAsync();
+                Alert.alert('Permission de stockage requise.' + status );
             }
         }
     };

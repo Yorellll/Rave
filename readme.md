@@ -32,7 +32,8 @@ Les tests ont été réalisé sur un appareil Android (Samsung Galaxy S7).
 
 [Lien](https://expo.dev/accounts/yorelll/projects/Rave/builds/0b05e6bc-8221-438c-b4fb-c6fe452c5338)
 
-(Le build n'est valable que pour les téléphones android, il est nécéssaire d'avoir un compte developper apple pour les téléphone sous IOS)
+(Le build n'est valable que pour les téléphones android, il est nécéssaire d'avoir un compte developper apple pour les téléphone sous IOS).
+La permission est demandé sans cesse m
 
 
 
