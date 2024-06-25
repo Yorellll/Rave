@@ -1,8 +1,8 @@
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {NavigationContainer} from "@react-navigation/native";
-import logScreen from "../Rave/screen/logScreen";
-import recordScreen from "../Rave/screen/recordScreen"
-import manageTabScreen from "../Rave/screen/manageTabScreen"
+import logScreen from "./screen/logScreen";
+import recordScreen from "./screen/recordScreen"
+import manageTabScreen from "./screen/manageTabScreen"
 
 
 export default function App() {

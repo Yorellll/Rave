@@ -28,7 +28,7 @@ Les tests ont été réalisé sur un appareil Android (Samsung Galaxy S7).
 
 ## Lien :
 
-![Qr code](./assets/RaveQrCode.png)
+![Qr code](./assets/QrCodeRave.png)
 
 [Lien](https://expo.dev/accounts/yorelll/projects/Rave/builds/0b05e6bc-8221-438c-b4fb-c6fe452c5338)
 
