@@ -28,9 +28,9 @@ Les tests ont été réalisé sur un appareil Android (Samsung Galaxy S7).
 
 ## Lien :
 
-![Qr code](./assets/QrCodeRave.png)
+![Qr code](./assets/QrCodeRave.svg)
 
-[Lien](https://expo.dev/accounts/yorelll/projects/Rave/builds/47400684-41b7-4866-b9b0-db2fbb532528)
+[Lien](https://expo.dev/preview/update?message=ajout&updateRuntimeVersion=1.0.0&createdAt=2024-06-25T08%3A27%3A42.831Z&slug=exp&projectId=a2d87aaa-eb9c-44a8-9cc6-c35e0fd5c1b0&group=e52d4a43-d741-481d-b8d4-733f45bedd9b)
 
 (Le build n'est valable que pour les téléphones android, il est nécéssaire d'avoir un compte developper apple pour les téléphone sous IOS).
 La permission est demandé sans cesse m
